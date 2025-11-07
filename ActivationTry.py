@@ -1,5 +1,5 @@
 import torch
-import torch.nn.functional as F
+import torch.nn as nn
 import matplotlib.pyplot as plt
 
 feature = torch.tensor([
@@ -18,30 +18,29 @@ y_true = torch.tensor([
     [15]
 ],dtype=torch.float32)
 
-w1 =torch.randn(2,4,requires_grad=True)
-b1 =torch.randn(4,requires_grad=True)
-w2 =torch.randn(4,1,requires_grad=True)
-b2 =torch.randn(1,requires_grad=True)
+model = nn.Sequential(
+    nn.Linear(2,4),
+    nn.ReLU(),
+    nn.Linear(4,1)
+)
 
-lr = 0.001
+loss_fn = nn.MSELoss()
+optimizer = torch.optim.Adam(model.parameters(),lr=0.001)
 
 for epoch in range(10000):
-    hLayer = F.relu(feature @ w1 + b1)
-    y_pred = hLayer @ w2 + b2
-    loss = ((y_pred-y_true)**2).mean()
+    y_pred = model(feature)
+    loss = loss_fn(y_pred, y_true)
+    
+    optimizer.zero_grad()
     loss.backward()
-    with torch.no_grad():
-        w1 -= w1.grad * lr
-        b1 -= b1.grad * lr
-        w2 -= w2.grad * lr
-        b2 -= b2.grad * lr
-    w1.grad.zero_()
-    b1.grad.zero_()
-    w2.grad.zero_()
-    b2.grad.zero_()
+
+    optimizer.step()
+
     if epoch % 1000 == 0:
         print(f"Epoch: {epoch:4d} | loss: {loss.item():.6f}")
 
+
+torch.save(model.state_dict(), "Model.pth")
 print(y_pred.detach())
 
 plt.scatter(range(len(y_true)), y_true.detach(), label="True", color="blue")
