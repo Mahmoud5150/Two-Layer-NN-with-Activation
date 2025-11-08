@@ -18,11 +18,20 @@ y_true = torch.tensor([
     [15]
 ],dtype=torch.float32)
 
-model = nn.Sequential(
-    nn.Linear(2,4),
-    nn.ReLU(),
-    nn.Linear(4,1)
-)
+class simpleNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(2, 4),
+            nn.ReLU(),
+            nn.Linear(4, 1)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+model = simpleNN()
+
 
 loss_fn = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(),lr=0.001)
